@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/Navbar';
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -22,8 +23,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
         <ThemeProvider>
-          <Navbar />
-          <main className="min-h-screen">{children}</main>
+          <AuthProvider>
+            <Navbar />
+            <main className="min-h-screen">{children}</main>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

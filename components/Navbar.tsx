@@ -1,9 +1,10 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Activity, Sun, Moon } from 'lucide-react';
+import { Activity, Sun, Moon, LogOut } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const navLinks = [
   { href: '/',            hash: '',            label: 'Home'         },
@@ -16,6 +17,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const [hash, setHash] = useState('');
   const { theme, toggle } = useTheme();
+  const { username, logout } = useAuth();
 
   useEffect(() => {
     if (pathname !== '/') { setHash(''); return; }
@@ -26,7 +28,7 @@ export default function Navbar() {
   }, [pathname]);
 
   const handleNavClick = (e: React.MouseEvent, link: (typeof navLinks)[number]) => {
-    if (link.href === '/history') return; // let Next.js handle navigation
+    if (link.href === '/history') return;
     if (pathname !== '/') return;
     e.preventDefault();
     setHash(link.hash);
@@ -78,6 +80,7 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
+          {/* Theme toggle */}
           <button
             onClick={toggle}
             aria-label="Toggle theme"
@@ -89,12 +92,37 @@ export default function Navbar() {
             {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
           </button>
 
-          <Link
-            href="/analyze"
-            className="bg-[#2DD4A0] text-[#0A1628] px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#25b88a] transition-colors"
-          >
-            Get Started
-          </Link>
+          {username ? (
+            <>
+              <span
+                className="hidden md:block text-xs font-medium px-3 py-1.5 rounded-lg border"
+                style={{
+                  color: 'var(--text-secondary)',
+                  borderColor: 'var(--border-subtle)',
+                  backgroundColor: 'var(--bg-muted)',
+                }}
+              >
+                {username}
+              </span>
+              <button
+                onClick={logout}
+                aria-label="Sign out"
+                className="flex items-center justify-center w-9 h-9 rounded-lg border transition-colors"
+                style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)' }}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--bg-overlay)')}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
+              >
+                <LogOut size={17} />
+              </button>
+            </>
+          ) : (
+            <Link
+              href="/analyze"
+              className="bg-[#2DD4A0] text-[#0A1628] px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#25b88a] transition-colors"
+            >
+              Get Started
+            </Link>
+          )}
         </div>
       </div>
     </nav>

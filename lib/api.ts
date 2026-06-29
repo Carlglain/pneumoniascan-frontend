@@ -2,6 +2,16 @@ import axios from 'axios';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://carlstorm-pneumoniascan-backend.hf.space';
 
+const client = axios.create({ baseURL: API_BASE_URL });
+
+client.interceptors.request.use(config => {
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('auth-token');
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export interface PredictionResult {
   patient_id:      string;
   diagnosis:       string;
@@ -54,12 +64,12 @@ export interface HistoryResponse {
 
 export const api = {
   healthCheck: async () => {
-    const res = await axios.get(`${API_BASE_URL}/`);
+    const res = await client.get('/');
     return res.data;
   },
 
   getModels: async (): Promise<ModelInfo[]> => {
-    const res = await axios.get(`${API_BASE_URL}/models`);
+    const res = await client.get('/models');
     return res.data.models;
   },
 
@@ -72,7 +82,7 @@ export const api = {
     formData.append('file', file);
     formData.append('model_name', modelName);
     formData.append('gradcam', String(gradcam));
-    const res = await axios.post(`${API_BASE_URL}/predict`, formData, {
+    const res = await client.post('/predict', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return res.data;
@@ -85,16 +95,16 @@ export const api = {
     model?:     string;
     search?:    string;
   } = {}): Promise<HistoryResponse> => {
-    const res = await axios.get(`${API_BASE_URL}/history`, { params });
+    const res = await client.get('/history', { params });
     return res.data;
   },
 
   getScan: async (id: number): Promise<ScanDetail> => {
-    const res = await axios.get(`${API_BASE_URL}/history/${id}`);
+    const res = await client.get(`/history/${id}`);
     return res.data;
   },
 
   deleteScan: async (id: number): Promise<void> => {
-    await axios.delete(`${API_BASE_URL}/history/${id}`);
+    await client.delete(`/history/${id}`);
   },
 };
